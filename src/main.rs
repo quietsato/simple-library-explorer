@@ -3,21 +3,13 @@ extern crate log;
 
 use env_logger;
 use reqwest;
-use serde_derive::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use std::{env, fs, path};
 use toml;
 use xdg;
 
 mod api;
-
-#[derive(Serialize, Deserialize, Default)]
-struct Config {
-    api_url: String,
-    api_key: String,
-    systemid: String,
-    isbn: Vec<String>,
-}
+mod models;
 
 fn main() {
     env_logger::init();
