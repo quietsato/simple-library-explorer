@@ -11,19 +11,19 @@ pub(crate) struct Config {
 pub(crate) type ISBN = String;
 pub(crate) type SystemId = String;
 
-#[derive(Serialize)]
+#[derive(Deserialize)]
 pub(crate) struct Library {
     status: String,
     reserveurl: String,
     libkey: Vec<(String, String)>,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize)]
 pub(crate) struct Book {
     borrowInfo: Vec<(SystemId, Library)>,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize)]
 pub(crate) struct ApiResponse {
     session: String,
     books: Vec<(ISBN, Book)>,
