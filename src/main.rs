@@ -1,15 +1,16 @@
 #[macro_use]
 extern crate log;
 
+mod api;
+mod models;
+
 use env_logger;
+use models::Config;
 use reqwest;
 use std::io::{Read, Write};
 use std::{env, fs, path};
 use toml;
 use xdg;
-
-mod api;
-mod models;
 
 fn main() {
     env_logger::init();
