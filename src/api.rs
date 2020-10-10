@@ -5,19 +5,36 @@ use reqwest;
 use serde_json::Value;
 use std::io::Result;
 
-pub(crate) fn access_api(config: Config) -> Result<String> {
+pub(crate) fn access_api(
+    api_url: &str,
+    api_key: &str,
+    systemid: &str,
+    isbn: Vec<String>,
+) -> Result<String> {
     let params = [
-        ("appkey", config.api_key),
-        ("systemid", config.systemid),
-        ("isbn", config.isbn.join(",")),
-        ("callback", "no".to_string()),
+        ("appkey", api_key),
+        ("systemid", systemid),
+        ("isbn", &isbn.join(",")),
+        ("callback", "no"),
     ];
 
-    debug!("{}", &config.api_url);
+    access_api_inner(api_url, &params)
+}
 
+pub(crate) fn access_api_polling(api_url: &str, api_key: &str, session: &str) -> Result<String> {
+    let params = [
+        ("appkey", api_key),
+        ("session", session),
+        ("callback", "no"),
+    ];
+
+    access_api_inner(api_url, &params)
+}
+
+fn access_api_inner(url: &str, params: &[(&str, &str)]) -> Result<String> {
     let client = reqwest::blocking::Client::new();
 
-    let res_raw = match client.get(&config.api_url).form(&params).send() {
+    let res_raw = match client.get(url).form(params).send() {
         Ok(res_raw) => res_raw,
         Err(e) => panic!(e),
     };
@@ -159,7 +176,12 @@ mod tests {
             c.api_url = mock_server.url("/check");
             c
         };
-        if let Ok(res) = access_api(config) {
+        if let Ok(res) = access_api(
+            &config.api_url,
+            &config.api_key,
+            &config.systemid,
+            config.isbn,
+        ) {
             debug!("{}", res);
         };
     }
