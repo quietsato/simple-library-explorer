@@ -1,4 +1,4 @@
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Default)]
 pub(crate) struct Config {
@@ -9,4 +9,17 @@ pub(crate) struct Config {
 }
 
 pub(crate) type ISBN = String;
-pub(crate) type SystemId = String;
+pub(crate) type Library = (String, String);
+pub(crate) type Books = Vec<Book>;
+
+#[derive(Debug)]
+pub(crate) struct Book {
+    pub isbn: ISBN,
+    pub libraries: Vec<Library>,
+}
+
+impl Book {
+    pub(crate) fn new(isbn: ISBN, libraries: Vec<Library>) -> Self {
+        Self { isbn, libraries }
+    }
+}

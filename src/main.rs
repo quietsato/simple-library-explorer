@@ -6,7 +6,7 @@ mod models;
 
 use env_logger;
 use models::Config;
-use reqwest;
+
 use std::io::{Read, Write};
 use std::{env, fs, path};
 use toml;
