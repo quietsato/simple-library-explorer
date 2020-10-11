@@ -84,6 +84,12 @@ fn parse_api_response(json: &str) -> Result<Either<String, Books>> {
 
 #[cfg(test)]
 mod tests {
+    /// Initialize env_logger for tests.  
+    /// Read https://docs.rs/env_logger/0.7.1/env_logger/#capturing-logs-in-tests
+    fn init() {
+        let _ = env_logger::builder().is_test(true).try_init();
+    }
+
     const json_res: &'static str = r#"{
         "session": "sessionid123", 
         "books": {
@@ -114,7 +120,7 @@ mod tests {
 
     #[test]
     fn parse_api_response_test() {
-        env_logger::init();
+        init();
 
         {
             debug!("returns session id if continue equals to 1");
@@ -154,7 +160,7 @@ mod tests {
 
     #[test]
     fn access_api_test() {
-        env_logger::init();
+        init();
 
         use httpmock::Method::GET;
         use httpmock::Mock;
