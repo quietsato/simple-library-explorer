@@ -3,14 +3,34 @@ use either::*;
 use reqwest;
 
 use serde_json::Value;
-use std::io::Result;
+use std::{io::Result, thread, time::Duration};
 
-pub(crate) fn access_api(
-    api_url: &str,
-    api_key: &str,
-    systemid: &str,
-    isbn: Vec<String>,
-) -> Result<String> {
+pub(crate) fn fetch_books_status(config: Config) -> Result<Books> {
+    let mut res = {
+        let raw_json = access_api(
+            &config.api_url,
+            &config.api_key,
+            &config.systemid,
+            config.isbn,
+        )?;
+        debug!("{}", raw_json);
+        parse_api_response(&raw_json)?
+    };
+
+    while let Left(session) = res {
+        res = {
+            thread::sleep(Duration::from_secs(1));
+            let raw_json = access_api_polling(&config.api_url, &config.api_key, &session)?;
+            parse_api_response(&raw_json)?
+        };
+    }
+
+    assert!(res.is_right());
+
+    Ok(res.unwrap_right())
+}
+
+fn access_api(api_url: &str, api_key: &str, systemid: &str, isbn: Vec<String>) -> Result<String> {
     let params = [
         ("appkey", api_key),
         ("systemid", systemid),
@@ -21,7 +41,7 @@ pub(crate) fn access_api(
     access_api_inner(api_url, &params)
 }
 
-pub(crate) fn access_api_polling(api_url: &str, api_key: &str, session: &str) -> Result<String> {
+fn access_api_polling(api_url: &str, api_key: &str, session: &str) -> Result<String> {
     let params = [
         ("appkey", api_key),
         ("session", session),
@@ -34,12 +54,12 @@ pub(crate) fn access_api_polling(api_url: &str, api_key: &str, session: &str) ->
 fn access_api_inner(url: &str, params: &[(&str, &str)]) -> Result<String> {
     let client = reqwest::blocking::Client::new();
 
-    let res_raw = match client.get(url).form(params).send() {
+    let res_raw = match client.get(url).query(params).send() {
         Ok(res_raw) => res_raw,
         Err(e) => panic!(e),
     };
 
-    match res_raw.json::<String>() {
+    match res_raw.text() {
         Ok(res) => Ok(res),
         Err(e) => {
             use std::io::{Error, ErrorKind};

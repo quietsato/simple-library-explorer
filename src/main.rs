@@ -7,8 +7,8 @@ mod models;
 use env_logger;
 use models::Config;
 
+use std::fs;
 use std::io::{Read, Write};
-use std::{env, fs, path};
 use toml;
 use xdg;
 
@@ -45,4 +45,13 @@ fn main() {
     debug!("API KEY: {}", "*".repeat(config.api_key.len()));
     debug!("SYSTEMID: {}", config.systemid);
     debug!("ISBN LIST: {:?}", config.isbn);
+
+    let books = api::fetch_books_status(config).expect("failed to fetch books status.");
+
+    for book in books {
+        println!("[{}]", book.isbn);
+        for library in book.libraries {
+            println!("  {}: {}", library.0, library.1);
+        }
+    }
 }
